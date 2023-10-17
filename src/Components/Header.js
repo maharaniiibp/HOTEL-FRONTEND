@@ -34,7 +34,7 @@ export default class Header extends React.Component {
                 <div class="header-content flex items-center flex-row">
                     <form action="#">
                         <div class="hidden md:flex relative">
-                        <h1 class="font-bold text-2xl text-gray-700">Dashboard</h1>
+                        <h1 class="font-bold text-xl text-yellow-900"> </h1>
                         </div> 
                         
                         <div class="flex md:hidden">
@@ -58,11 +58,11 @@ export default class Header extends React.Component {
                             <img
                                 src="/assets/5856.jpg"
                                 alt=""
-                                class="h-10 w-10 bg-gray-200 border rounded-full"
+                                class="h-10 w-10 bg-orange-900  rounded-full"
                             />
                             <span class="flex flex-col ml-2">
-                                <span class="truncate w-20 font-semibold tracking-wide leading-none">{this.state.user_name}</span>
-                                <span class="truncate w-20 text-gray-500 text-xs leading-none mt-1">{this.state.role}</span>
+                                <span class="truncate w-20 text-yellow-900 font-semibold tracking-wide leading-none">{this.state.email}</span>
+                                <span class="truncate w-20 text-yellow-900 text-xs leading-none mt-1">{this.state.role}</span>
                             </span>
                         </a>
                     </div>

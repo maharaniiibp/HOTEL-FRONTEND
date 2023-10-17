@@ -8,74 +8,88 @@ import $ from "jquery";
 import moment from 'moment';
 import '@progress/kendo-theme-material/dist/all.css';
 import { PDFExport, savePDF } from "@progress/kendo-react-pdf";
+import numeral from 'numeral';
+
 
 //ini untuk print
 const PrintElement = (props) => {
     const { item } = props;
+    let hari = moment(item.tgl_check_out, 'YYYY-MM-DD').diff(moment(item.tgl_check_in, 'YYYY-MM-DD'), 'days')
+    let jumlah = item.jumlah_kamar
+
 
     return (
-        <div className="mt-4">
+        <div className="mt-4 tracking-wider">
             <div className="hotel-invoice">
                 <h1 className="font-bold">Invoice Booking Room</h1>
 
                 <div className="invoice-details">
-                    <div>
-                        <p><span className="font-semibold">Hotel Name:</span> Slippy</p>
-                        <p><span className="font-semibold mt-2">Address:</span> Malang</p>
-                        <p><span className="font-semibold mt-2">Phone:</span> 0331-1234</p>
+                    <div className="text-md">
+                        <p><span className="font-semibold">Hotel Name:</span> OmahRehat</p>
+                        <p><span className="font-semibold mt-2">Address:</span> Jl. Menuju Surga</p>
+                        <p><span className="font-semibold mt-2">Phone:</span> 03544-76875</p>
                     </div>
-                    <div>
+                    <div className="text-md mr-4">
                         <p><span className="font-semibold">Date: </span> {moment(Date.now()).format('DD-MM-YYYY')}</p>
                         <p><span className="font-semibold">Invoice:</span> </p>
-                        <span className="mt-1 px-3 py-2 inline-flex text-xl leading-5 font-semibold rounded bg-blue-100 text-blue-800">
-                            BOOK - {item.booking_number}
+                        <span className="mt-1 px-3 py-2 inline-flex text-[16px] leading-5 font-semibold rounded bg-[#9BA4B5] text-[#394867]">
+                            BOOK - {item.nomor_pemesanan}
                         </span>
                     </div>
                 </div>
 
-                <table className="invoice-items">
+                <div className="text-sm mb-4 flex gap-48">
+                <p><span className="font-semibold mt-2">Check In:</span> {moment(item.tgl_check_in).format('DD-MM-YYYY')}</p>
+                        <p><span className="font-semibold mt-2 justify-end">Check Out:</span> {moment(item.tgl_check_out).format('DD-MM-YYYY')}</p>
+                </div>
+                <table className="invoice-items text-md w-full">
                     <thead>
                         <tr>
                             <th className="p-4 text-left">Type Room</th>
+                            <th className="p-4 text-center">Total-Room</th>
                             <th className="p-4 text-center">Total-Day</th>
-                            <th className="p-4 text-center">Check In</th>
-                            <th className="p-4 text-center">Check Out</th>
                             <th className="p-4 text-center">Price</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
-                            <td className="p-4 text-left">{item.room_type.name_room_type}</td>
-                            <td className="p-4 text-center">{item.total_room}</td>
-                            <td className="p-4 text-left">{moment(item.check_in_date).format('DD-MM-YYYY')}</td>
-                            <td className="p-4 text-left">{moment(item.check_out_date).format('DD-MM-YYYY')}</td>
-                            <td className="p-4 text-left">{item.room_type.price}</td>
+                            <td className="p-4 text-left">{item.tipe_kamar.nama_tipe_kamar}</td>
+                            <td className="p-4 text-center">{jumlah}</td>
+                            <td className="p-4 text-center">{hari} days</td>
+                            <td className="p-4 text-left">{numeral(item.tipe_kamar.harga).format('0,0')}</td>
                         </tr>
                     </tbody>
                 </table>
+            <div className="flex gap-[350px] mt-8">
+                <h2 className="">Total :</h2>
+                <p>{numeral(item.tipe_kamar.harga * hari * jumlah).format('0,0')}</p>
+
+            </div>
             </div>
         </div>
     )
 }
 
+
 export default class MyBookings extends React.Component {
     constructor() {
         super()
         this.state = {
+            pemesanan: [],
             booking: [],
-            id_booking: "",
+            id: "",
             id_user: "",
             id_customer: "",
-            id_room_type: "",
-            booking_number: "",
-            name_customer: "",
-            email: "",
-            booking_date: "",
-            check_in_date: "",
-            check_out_date: "",
-            guest_name: "",
-            total_room: "",
-            booking_status: "",
+            tipeKamarId: "",
+            nomor_pemesanan: "",
+            nama_pemesan: "",
+            email_pemesan: "",
+            tgl_pemesanan: "",
+            tgl_check_in: "",
+            tgl_check_out: "",
+            nama_tamu: "",
+            jumlah_kamar: "",
+            status_pemesanan: "",
             role: "",
             token: "",
             action: "",
@@ -89,7 +103,7 @@ export default class MyBookings extends React.Component {
         this.state.id_customer = localStorage.getItem("id")
         if (localStorage.getItem("token")) {
             if (
-                localStorage.getItem("role") === "customer"
+                localStorage.getItem("role") == "customer"
             ) {
                 this.state.token = localStorage.getItem("token");
                 this.state.role = localStorage.getItem("role");
@@ -99,6 +113,7 @@ export default class MyBookings extends React.Component {
             }
         }
     }
+
 
     headerConfig = () => {
         let header = {
@@ -113,8 +128,10 @@ export default class MyBookings extends React.Component {
         })
     }
 
+
     getBookingByCust = () => {
-        let url = "http://localhost:8080/booking/customer/" + this.state.id_customer
+        const email = localStorage.getItem("email")
+        let url = "http://localhost:3000/pesan/getbycust/" + email
         axios.get(url, this.headerConfig())
             .then(response => {
                 this.setState({
@@ -127,27 +144,105 @@ export default class MyBookings extends React.Component {
             })
     }
 
+
+
+    // _handleFilter = () => {
+    //     let data = {
+    //         keyword: this.state.keyword,
+    //     }
+    //     let url = "http://localhost:3000/pesan/find" + this.state.status_pemesanan
+    //     axios.post(url, data)
+    //         .then(response => {
+    //             if (response.status === 200) {
+    //                 this.setState({
+    //                     pemesanan: response.data.data
+    //                 })
+    //             } else {
+    //                 alert(response.data.message)
+    //                 this.setState({ message: response.data.message })
+
+    //             }
+    //         })
+    //         .catch(error => {
+    //             console.log("error", error.response.status)
+    //         })
+    // }
+
     _handleFilter = () => {
         let data = {
-            keyword: this.state.keyword,
-        }
-        let url = "http://localhost:8080/booking/find/filter/" + this.state.id_customer
-        axios.post(url, data)
-            .then(response => {
-                if (response.status === 200) {
-                    this.setState({
-                        booking: response.data.data
-                    })
-                } else {
-                    alert(response.data.message)
-                    this.setState({ message: response.data.message })
+          keyword: this.state.keyword,
+        };
+    
+        let url = "http://localhost:3000/pesan/find";
+    
+        axios
+          .post(url, data, this.headerConfig())
+          .then((response) => {
+            if (response.status === 200) {
+              this.setState({
+                booking: response.data.data,
+              });
+            } else {
+              alert(response.data.message);
+              this.setState({ message: response.data.message });
+            }
+          })
+          .catch((error) => {
+            console.log("error", error.response.status);
+          });
+      };
+    
+      _handleCheckIn = () => {
+        const inputDateElement = document.getElementById("tgl_check_in"); // Ganti 'tgl_check_in' dengan ID input sesuai kebutuhan
+      
+        const selectedDate = new Date(inputDateElement.value); // Mengambil tanggal dari inputan pengguna
+        const year = selectedDate.getFullYear();
+        const month = String(selectedDate.getMonth() + 1).padStart(2, "0");
+        const day = String(selectedDate.getDate()).padStart(2, "0");
+        const formattedDate = `${year}-${month}-${day}`;
+      
+        let data = {
+          tgl_check_in: formattedDate, // Menggunakan formattedDate yang sudah diubah
+        };
+      console.log("ini keywordnya "+data.keyword)
+        let url = "http://localhost:3000/pesan/findPemesananCheck";
+      
+        axios
+          .post(url, data, this.headerConfig())
+          .then((response) => {
+            if (response.status === 200) {
+              // Filter hasil pencarian berdasarkan keyword (nama_tamu)
+              const filteredPemesanans = response.data.data
+      
+              this.setState({
+                booking: filteredPemesanans,
+              });
+            } else {
+                
+              alert(response.data.message);
+              this.setState({ message: response.data.message });
+            }
+          })
+          .catch((error) => {
+            console.log("error add data", error);
+            if (error.response && (error.response.status === 500 || error.response.status === 404 || error.response.status === 400)) {
+              window.alert(error.response.data.message);
+            }
+          });
+      };
 
-                }
-            })
-            .catch(error => {
-                console.log("error", error.response.status)
-            })
-    }
+_handleInputChange = (e) => {
+    this.setState(
+      {
+        [e.target.name]: e.target.value,
+      },
+      () => {
+        this._handleFilter();
+        this._handleCheckIn();
+      }
+     );
+      };
+
 
     checkRole = () => {
         if (this.state.role !== "customer") {
@@ -167,7 +262,7 @@ export default class MyBookings extends React.Component {
 
         setTimeout(() => {
             savePDF(element, {
-                fileName: `invoice-${item.booking_number}`
+                fileName: `invoice-${item.nomor_pemesanan}`
             })
             this.setState({
                 isPrint: false
@@ -186,24 +281,29 @@ export default class MyBookings extends React.Component {
                 <Navbar />
 
                 <div className="m-6 pl-6">
-                    <p className="text-xl font-semibold text-blue-600">History </p>
-                    <p className="text-5xl font-bold mt-2">Transaction List</p>
-                    <div className="flex mt-6">
-                        <div className="flex rounded w-1/2">
-                            <input
-                                type="text"
-                                className="w-5/6 block w-full px-4 py-2 bg-white border rounded-md focus:border-blue-400 focus:ring-blue-300 focus:outline-none focus:ring focus:ring-opacity-40"
-                                placeholder="Search..."
-                                name="keyword"
-                                value={this.state.keyword}
-                                onChange={this.handleChange}
-                            />
-                            <button className="w-1/6 ml-2 px-4 text-white bg-blue-600 rounded hover:bg-blue-700" onClick={this._handleFilter}>
-                                <FontAwesomeIcon icon={faSearch} size="" />
-                            </button>
-                        </div>
-                    </div>
-                </div>
+                        <p className="text-5xl font-bold mt-14">Transaction List</p>
+                        <div className="flex mt-2 flex-row-reverse">
+              <div className="flex rounded w-1/3 mr-4">
+                {/* <input
+                  type="text"
+                  className="w-2/3 block px-4 py-2 bg-white border rounded-md focus:border-blue-400 focus:ring-blue-300 focus:outline-none focus:ring focus:ring-opacity-40 "
+                  placeholder="Search by booking number..."
+                  name="keyword"
+                  value={this.state.keyword}
+                  onChange={this.handleChange}
+                  onKeyUp={this._handleFilter}
+                /> */}
+                <input
+                  type="date"
+                  name="tgl_check_in"
+                  id="tgl_check_in"
+                  className="border-2 border-[#9BA4B5] rounded-md p-1"
+                  value={this.state.tgl_check_in}
+                  onChange={this._handleInputChange}
+                />
+              </div>
+            </div>
+                    </div>
 
                 <div className="flex flex-col mt-2 ml-12 mr-8">
                     <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
@@ -222,13 +322,13 @@ export default class MyBookings extends React.Component {
                                                 scope="col"
                                                 className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                                             >
-                                                Guest
+                                                Guest Name
                                             </th>
                                             <th
                                                 scope="col"
                                                 className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                                             >
-                                                Tipe Room
+                                                Type Room
                                             </th>
                                             <th
                                                 scope="col"
@@ -275,59 +375,59 @@ export default class MyBookings extends React.Component {
                                                     <td className="px-6 py-4 whitespace-nowrap">
                                                         <div className="flex items-center">
                                                             <div className="text-sm font-medium text-gray-900">
-                                                                {item.booking_number}
+                                                                {item.nomor_pemesanan}
                                                             </div>
                                                         </div>
                                                     </td>
                                                     <td className="px-6 py-4 whitespace-nowrap">
                                                         <div className="flex items-center">
                                                             <div className="text-sm font-medium text-gray-900">
-                                                                {item.guest_name}
+                                                                {item.nama_tamu}
                                                             </div>
                                                         </div>
                                                     </td>
                                                     <td className="px-6 py-4 whitespace-nowrap">
                                                         <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                                            {item.room_type.name_room_type}
+                                                            {item.tipe_kamar?.nama_tipe_kamar}
                                                         </span>
                                                     </td>
                                                     <td className="px-6 py-4 whitespace-nowrap">
                                                         <div className="text-sm text-gray-900">
-                                                            {item.total_room}
+                                                            {item.jumlah_kamar}
                                                         </div>
                                                     </td>
                                                     <td className="px-6 py-4 whitespace-nowrap">
                                                         <div className="text-sm text-gray-900">
-                                                            {moment(item.booking_date).format('DD-MM-YYYY')}
+                                                            {moment(item.tgl_pemesanan).format('DD-MM-YYYY')}
 
                                                         </div>
                                                     </td>
                                                     <td className="px-6 py-4 whitespace-nowrap">
                                                         <div className="text-sm text-gray-900">
-                                                            {moment(item.check_in_date).format('DD-MM-YYYY')}
+                                                            {moment(item.tgl_check_in).format('DD-MM-YYYY')}
 
                                                         </div>
                                                     </td>
                                                     <td className="px-6 py-4 whitespace-nowrap">
                                                         <div className="text-sm text-gray-900">
-                                                            {moment(item.check_out_date).format('DD-MM-YYYY')}
+                                                            {moment(item.tgl_check_out).format('DD-MM-YYYY')}
 
                                                         </div>
                                                     </td>
                                                     <td className="px-6 py-4 whitespace-nowrap">
-                                                        {item.booking_status === "baru" &&
+                                                        {item.status_pemesanan === "baru" &&
                                                             <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-indigo-100 text-indigo-800">
-                                                                {item.booking_status}
+                                                                {item.status_pemesanan}
                                                             </span>
                                                         }
-                                                        {item.booking_status === "check_in" &&
+                                                        {item.status_pemesanan === "check_in" &&
                                                             <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
-                                                                {item.booking_status}
+                                                                {item.status_pemesanan}
                                                             </span>
                                                         }
-                                                        {item.booking_status === "check_out" &&
+                                                        {item.status_pemesanan === "check_out" &&
                                                             <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
-                                                                {item.booking_status}
+                                                                {item.status_pemesanan}
                                                             </span>
                                                         }
                                                     </td>
@@ -356,7 +456,6 @@ export default class MyBookings extends React.Component {
                 </div>
 
             </div >
-        )
-    }
-
+        )
+    }
 }

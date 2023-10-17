@@ -57,7 +57,7 @@ export default class Customer extends React.Component {
         let data = {
             keyword: this.state.keyword,
         }
-        let url = "http://localhost:8080/customer/find/filter"
+        let url = "http://localhost:3000/customer/find/filter"
         axios.post(url, data)
             .then(response => {
                 if (response.status === 200) {
@@ -114,7 +114,7 @@ export default class Customer extends React.Component {
         }
 
         if (this.state.action === "insert") {
-            let url = "http://localhost:8080/customer/register"
+            let url = "http://localhost:3000/customer/addCustomer"
             axios.post(url, form)
                 .then(response => {
                     this.getCustomer()
@@ -128,7 +128,7 @@ export default class Customer extends React.Component {
                     }
                 })
         } else {
-            let url = "http://localhost:8080/customer/update/" + this.state.id_customer
+            let url = "http://localhost:3000/customer/update/" + this.state.id_customer
             axios.put(url, form, this.headerConfig())
                 .then(response => {
                     this.getCustomer()
@@ -142,7 +142,7 @@ export default class Customer extends React.Component {
     }
 
     handleDrop = (id) => {
-        let url = "http://localhost:8080/customer/delete/" + id
+        let url = "http://localhost:3000/customer/delete/" + id
         if (window.confirm("Are you sure to delete this customer ? ")) {
             axios.delete(url, this.headerConfig())
                 .then(response => {
@@ -159,7 +159,7 @@ export default class Customer extends React.Component {
     }
 
     getCustomer = () => {
-        let url = "http://localhost:8080/customer/"
+        let url = "http://localhost:3000/customer/"
         axios.get(url)
             .then((response) => {
                 this.setState({
@@ -199,7 +199,7 @@ export default class Customer extends React.Component {
                             <div className="flex rounded w-1/2">
                                 <input
                                     type="text"
-                                    className="w-2/3 block w-full px-4 py-2 bg-white border rounded-md focus:border-blue-400 focus:ring-blue-300 focus:outline-none focus:ring focus:ring-opacity-40"
+                                    className="w-2/3 block px-4 py-2 bg-white border rounded-md focus:border-blue-400 focus:ring-blue-300 focus:outline-none focus:ring focus:ring-opacity-40"
                                     placeholder="Search..."
                                     name="keyword"
                                     value={this.state.keyword}
@@ -315,7 +315,7 @@ export default class Customer extends React.Component {
                     </div>
                     <footer class="footer px-4 py-2">
                         <div class="footer-content">
-                            <p class="text-sm text-gray-600 text-center">© Brandname 2023. All rights reserved. <a href="https://twitter.com/iaminos">by Erairris</a></p>
+                            <p class="text-sm text-gray-600 text-center">© Brandname 2023. All rights reserved.</p>
                         </div>
                     </footer>
                 </main>
